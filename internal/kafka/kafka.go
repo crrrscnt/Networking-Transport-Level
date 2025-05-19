@@ -38,7 +38,9 @@ func ReadFromKafka() error {
 				continue
 			}
 			fmt.Printf(">From Kafka: sending segment to C-Layer:> %+v\n", segment)
-			storage.AddPending(segment)   // регистрируем сегмент как ожидающий ACK
+			// fmt.Pt
+			storage.AddPending(segment) // регистрируем сегмент как ожидающий ACK
+			// fmt.Print(segment)
 			go utils.SendSegment(segment) // Send to data link layer in a goroutine
 		case err := <-partitionConsumer.Errors():
 			fmt.Printf("Error: %s\n", err.Error())

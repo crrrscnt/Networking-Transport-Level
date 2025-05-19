@@ -20,7 +20,7 @@ type Segment struct {
 
 // SendRequest структура тела запроса на /code канального уровня
 type SendRequest struct {
-	Id       int       `json:"id,omitempty"`
+	Id       int       `json:"id,omitempty"` // если пустой, то не включается в JSON
 	Username string    `json:"username"`
 	Text     string    `json:"data"`
 	SendTime time.Time `json:"send_time"`
@@ -39,8 +39,15 @@ type ReceiveRequest struct {
 	Username string    `json:"username"`
 	Text     string    `json:"data"`
 	SendTime time.Time `json:"send_time"`
-	Error    string    `json:"error"`
+	Error    bool      `json:"status"`
 }
+
+// type ReceiveRequest struct {
+// 	Username string    `json:"username"`
+// 	Text     string    `json:"data"`
+// 	SendTime time.Time `json:"send_time"`
+// 	Error    string    `json:"error"`
+// }
 
 func SplitMessage(payload string, segmentSize int) []string {
 	result := make([]string, 0)
@@ -95,18 +102,34 @@ func SendSegment(body Segment) {
 }
 
 func SendReceiveRequest(body ReceiveRequest) {
-	reqBody, _ := json.Marshal(body)
-
-	req, _ := http.NewRequest("POST", consts.ReceiveUrl, bytes.NewBuffer(reqBody))
-	req.Header.Add("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	reqBody, err := json.Marshal(body)
 	if err != nil {
+		fmt.Printf("Error marshalling ReceiveRequest: %v\n", err)
 		return
 	}
 
+	req, err := http.NewRequest("POST", consts.ReceiveUrl, bytes.NewBuffer(reqBody))
+	if err != nil {
+		fmt.Printf("Error creating request to App Layer (%s): %v\n", consts.ReceiveUrl, err)
+		return
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Error sending request to App Layer (%s): %v\n", consts.ReceiveUrl, err)
+		return
+	}
 	defer resp.Body.Close()
+
+	// Проверка статуса ответа
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("App Layer returned non-OK status: %d\n", resp.StatusCode)
+		return
+	}
+
+	fmt.Printf("Successfully sent message/error to App Layer: %s\n", string(reqBody))
 }
 
 type AckRequest struct {

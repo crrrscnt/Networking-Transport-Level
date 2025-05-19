@@ -16,6 +16,7 @@ import (
 	"transport-layer-earth/internal/utils"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -31,13 +32,14 @@ func main() {
 
 	// Periodically scan storage
 	go func() {
-		ticker := time.NewTicker(consts.KafkaReadPeriod)
+		ticker := time.NewTicker(consts.KafkaReadPeriod) // передача канальному ур
 		defer ticker.Stop()
 
 		for {
 			select {
 			case <-ticker.C:
 				storage.ScanStorage(utils.SendReceiveRequest)
+				// fmt.Print("отсканено")
 			case <-done:
 				return
 			}
@@ -49,20 +51,23 @@ func main() {
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not Found", http.StatusNotFound)
 	})
-	r.HandleFunc("/transfer", handlers.HandleTransfer).Methods(http.MethodPost, http.MethodOptions)
+	// r.HandleFunc("/transfer", handlers.HandleTransfer).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/send", handlers.HandleSend).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/ack", handlers.HandleACK).Methods(http.MethodPost, http.MethodOptions)
 	http.Handle("/", r)
 
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
-
+	corsHandler := cors.Default().Handler(r)
 	// Start HTTP server
 	srv := http.Server{
-		Handler:           r,
-		Addr:              ":8080",
-		ReadTimeout:       consts.ReadTimeout,
-		WriteTimeout:      consts.WriteTimeout,
+		Handler: corsHandler,
+		Addr:    ":8080",
+		// запуск таймеров при подключении клиента
+		ReadTimeout: consts.ReadTimeout, // макс время, за к-е клиент должен прочитать запрос;
+		// если клиент не присылает данные дольше readtimout, то обрыв соединения
+
+		WriteTimeout:      consts.WriteTimeout, // макс время, за к-е происходит отправка клиенту ответа
 		ReadHeaderTimeout: consts.ReadHeaderTimeout,
 	}
 	go func() {

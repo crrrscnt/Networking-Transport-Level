@@ -11,6 +11,16 @@ import (
 	"transport-layer-earth/internal/utils"
 )
 
+// HandleSend godoc
+// @Summary Отправка сообщения
+// @Description Отправка сообщения с прикладного уровня на транспортный
+// @Tags transport
+// @Accept json
+// @Produce json
+// @Param message body utils.SendRequest true "Сообщение для отправки"
+// @Success 200
+// @Failure 400
+// @Router /send [post]
 func HandleSend(w http.ResponseWriter, r *http.Request) {
 	// Read request body (message from application layer)
 	body, err := io.ReadAll(r.Body)
@@ -34,7 +44,7 @@ func HandleSend(w http.ResponseWriter, r *http.Request) {
 	// Split message into segments
 	segments := utils.SplitMessage(message.Text, consts.SegmentSize)
 	total := len(segments)
-
+	storage.StartTrackingOutgoingMessage(message.SendTime, message.Username, total) // <--- ВАЖНЫЙ ВЫЗОВ
 	// Send segments to Kafka
 	for i, segment := range segments {
 		payload := utils.Segment{
@@ -52,38 +62,47 @@ func HandleSend(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleTransfer(w http.ResponseWriter, r *http.Request) {
-	// Read request body (segment from data link layer)
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
+// func HandleTransfer(w http.ResponseWriter, r *http.Request) {
+// 	// Read request body (segment from data link layer)
+// 	body, err := io.ReadAll(r.Body)
+// 	if err != nil {
+// 		w.WriteHeader(http.StatusBadRequest)
+// 		return
+// 	}
+// 	defer r.Body.Close()
 
-	// Parse segment into structure
-	segment := utils.Segment{}
-	if err = json.Unmarshal(body, &segment); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+// 	// Parse segment into structure
+// 	segment := utils.Segment{}
+// 	if err = json.Unmarshal(body, &segment); err != nil {
+// 		w.WriteHeader(http.StatusBadRequest)
+// 		return
+// 	}
 
-	// Add segment to storage
-	fmt.Printf(">From C-Layer: received segment:> %+v\n", segment)
-	storage.AddSegment(segment)
+// 	// Add segment to storage
+// 	fmt.Printf(">From C-Layer: received segment:> %+v\n", segment)
+// 	storage.AddSegment(segment)
 
-	// Отправляем ACK обратно на Землю
-	ack := utils.AckRequest{
-		SendTime:      segment.SendTime,
-		SegmentNumber: segment.SegmentNumber,
-	}
-	go utils.SendAck(ack)
+// 	// Отправляем ACK обратно на Землю
+// 	ack := utils.AckRequest{
+// 		SendTime:      segment.SendTime,
+// 		SegmentNumber: segment.SegmentNumber,
+// 	}
+// 	go utils.SendAck(ack)
 
-	// Respond with 200 OK
-	w.WriteHeader(http.StatusOK)
-}
+// 	// Respond with 200 OK
+// 	w.WriteHeader(http.StatusOK)
+// }
 
-// Обработчик для получения ACK от C-Layer
+// HandleACK godoc
+// @Summary Получение ACK
+// @Description Получение подтверждения (ACK) от канального уровня
+// @Tags transport
+// @Accept json
+// @Produce json
+// @Param ack body utils.AckRequest true "Информация о подтверждении"
+// @Success 200
+// @Failure 400
+// @Router /ack [post]
 func HandleACK(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
