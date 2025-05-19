@@ -14,12 +14,18 @@ import (
 )
 
 // Segment - структура сегмента, получаемого от канального уровня Земли
+// @Description Структура сегмента сообщения
 type Segment struct {
-	SegmentNumber  int       `json:"segment_number"`
-	TotalSegments  int       `json:"total_segments"`
-	Username       string    `json:"username"`
-	SendTime       time.Time `json:"send_time"`
-	SegmentPayload string    `json:"payload"`
+	// Номер сегмента в сообщении
+	SegmentNumber int `json:"segment_number" example:"1"`
+	// Общее количество сегментов в сообщении
+	TotalSegments int `json:"total_segments" example:"3"`
+	// Имя пользователя, отправившего сообщение
+	Username string `json:"username" example:"user123"`
+	// Время отправки сообщения
+	SendTime time.Time `json:"send_time" example:"2023-01-01T12:00:00Z"`
+	// Полезная нагрузка сегмента (часть сообщения)
+	SegmentPayload string `json:"payload" example:"Часть сообщения"`
 }
 
 // Message - структура для хранения собираемого сообщения в storage
@@ -32,11 +38,16 @@ type Message struct {
 }
 
 // ReceiveRequest - структура тела запроса на прикладной уровень Марса (WebSocket сервер)
+// @Description Структура запроса на прикладной уровень Марса
 type ReceiveRequest struct {
-	Username string    `json:"username"`
-	Text     string    `json:"data"` // Поле изменено на data для совместимости с app-layer-mars-ws
-	SendTime time.Time `json:"send_time"`
-	Error    string    `json:"error,omitempty"` // Сделаем ошибку опциональной
+	// Имя пользователя, отправившего сообщение
+	Username string `json:"Username" example:"user123"` // `json:"username"
+	// Текст сообщения
+	Text string `json:"Text" example:"Полный текст сообщения"` //`json:"data"
+	// Время отправки сообщения
+	SendTime time.Time `json:"SendTime" example:"2023-01-01T12:00:00Z"` // `json:"send_time"
+	// Текст ошибки (если есть)
+	Error bool `json:"Error" example:"message_assembly_timeout_or_segment_lost"` // `json:"error,omitempty"
 }
 
 // SendReceiveRequest отправляет собранное сообщение (или ошибку) на прикладной уровень Марса
@@ -70,9 +81,12 @@ func SendReceiveRequest(body ReceiveRequest) {
 }
 
 // AckRequest - структура для отправки ACK на транспортный уровень Земли
+// @Description Структура подтверждения получения сегмента
 type AckRequest struct {
-	SendTime      time.Time `json:"send_time"`
-	SegmentNumber int       `json:"segment_number"`
+	// Время отправки исходного сообщения
+	SendTime time.Time `json:"send_time" example:"2023-01-01T12:00:00Z"`
+	// Номер сегмента, для которого отправляется подтверждение
+	SegmentNumber int `json:"segment_number" example:"1"`
 }
 
 // SendAck отправляет ACK на транспортный уровень Земли

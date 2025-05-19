@@ -1,0 +1,75 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API для транспортного уровня Марса, обрабатывающего сегменты сообщений с Земли",
+        "title": "Транспортный уровень Марса API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "192.168.80.254:8081",
+    "basePath": "/",
+    "paths": {
+        "/transfer": {
+            "post": {
+                "description": "Принимает сегмент сообщения от канального уровня Земли, сохраняет его и отправляет ACK",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "segments"
+                ],
+                "summary": "Получение сегмента сообщения",
+                "parameters": [
+                    {
+                        "description": "Сегмент сообщения",
+                        "name": "segment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/utils.Segment"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Сегмент успешно получен"
+                    },
+                    "400": {
+                        "description": "Некорректный запрос"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "utils.Segment": {
+            "description": "Структура сегмента сообщения",
+            "type": "object",
+            "properties": {
+                "payload": {
+                    "description": "Полезная нагрузка",
+                    "type": "string"
+                },
+                "segment_number": {
+                    "description": "Номер сегмента в сообщении",
+                    "type": "integer"
+                },
+                "send_time": {
+                    "description": "Время отправки сегмента",
+                    "type": "string"
+                },
+                "total_segments": {
+                    "description": "Общее количество сегментов в сообщении",
+                    "type": "integer"
+                },
+                "username": {
+                    "description": "Имя пользователя, отправившего сообщение",
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

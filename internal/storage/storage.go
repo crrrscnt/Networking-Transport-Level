@@ -90,7 +90,7 @@ func ScanStorage(sender sendFunc) {
 				Username: message.Username,
 				Text:     fullText,
 				SendTime: sendTime,
-				Error:    "",
+				Error:    false, // ""
 			}
 			fmt.Printf("<To App-Layer (Mars WS): transfer assembled message ID %s\n", sendTime.Format(time.RFC3339Nano))
 			go sender(payload)        // Запускаем отправку на прикладной уровень Марса
@@ -101,7 +101,7 @@ func ScanStorage(sender sendFunc) {
 				Username: message.Username,
 				Text:     "",
 				SendTime: sendTime,
-				Error:    consts.SegmentLostError, // Ошибка таймаута/потери сегмента
+				Error:    true, // consts.SegmentLostError, // Ошибка таймаута/потери сегмента
 			}
 			go sender(payload)        // Отправляем ошибку на прикладной уровень Марса
 			delete(storage, sendTime) // Удаляем незавершенное сообщение

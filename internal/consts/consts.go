@@ -7,15 +7,15 @@ import "time"
 const (
 	// MyHost - Адрес и порт, на котором слушает транспортный уровень Марса
 	// MyHost = "0.0.0.0:8081" // Слушаем на всех интерфейсах
-	MyHost = "192.168.1.4:8081" // Или конкретный IP, если нужно
+	MyHost = "192.168.80.254:8081" // Или конкретный IP, если нужно //  192.168.80.254
 
 	// ReceiveUrl - Адрес прикладного уровня Марса (WebSocket сервер) для отправки собранных сообщений
-	ReceiveUrl = "http://192.168.1.4:8002/receive" // Убедитесь, что этот адрес доступен с машины, где запущен transport-layer-mars
+	ReceiveUrl = "http://localhost:8010/ReceiveMessage" // Убедитесь, что этот адрес доступен с машины, где запущен transport-layer-mars
 
 	// EarthTransportURL - Базовый адрес транспортного уровня Земли для отправки ACK
-	EarthTransportURL = "http://192.168.1.4:8080" // Убедитесь, что этот адрес доступен
+	EarthTransportURL = "http://192.168.80.254:8080" // Убедитесь, что этот адрес доступен // 192.168.1.4
 
-	ChannelLayerURL = "http://192.168.1.4:3500"
+	ChannelLayerURL = "http://192.168.80.183:3050" // 192.168.1.4
 
 	ReadTimeout       = 10 * time.Second
 	WriteTimeout      = 10 * time.Second

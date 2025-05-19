@@ -8,12 +8,20 @@ import (
 	"io"
 	"net/http"
 
-	// "transport-layer-mars/internal/consts" // Больше не нужен здесь
-	// "transport-layer-mars/internal/kafka" // Удаляем импорт Kafka
 	"transport-layer-mars/internal/storage"
 	"transport-layer-mars/internal/utils"
 )
 
+// HandleTransfer обрабатывает получение сегментов от канального уровня Земли
+// @Summary Получение сегмента сообщения
+// @Description Принимает сегмент сообщения от канального уровня Земли, сохраняет его и отправляет ACK
+// @Tags segments
+// @Accept json
+// @Produce json
+// @Param segment body utils.Segment true "Сегмент сообщения"
+// @Success 200 "Сегмент успешно получен"
+// @Failure 400 "Некорректный запрос"
+// @Router /transfer [post]
 func HandleTransfer(w http.ResponseWriter, r *http.Request) {
 	// Read request body (segment from data link layer)
 	body, err := io.ReadAll(r.Body)
@@ -48,7 +56,16 @@ func HandleTransfer(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Обработчик для получения ACK от C-Layer Земли
+// HandleACK обрабатывает получение ACK от канального уровня Земли
+// @Summary Получение подтверждения (ACK)
+// @Description Принимает подтверждение (ACK) от канального уровня Земли
+// @Tags ack
+// @Accept json
+// @Produce json
+// @Param ack body utils.AckRequest true "Подтверждение получения сегмента"
+// @Success 200 "ACK успешно получен"
+// @Failure 400 "Некорректный запрос"
+// @Router /ack [post]
 func HandleACK(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {

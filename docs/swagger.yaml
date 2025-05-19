@@ -1,0 +1,53 @@
+basePath: /
+definitions:
+  utils.Segment:
+    description: Структура сегмента сообщения
+    properties:
+      payload:
+        description: Полезная нагрузка
+        type: string
+      segment_number:
+        description: Номер сегмента в сообщении
+        type: integer
+      send_time:
+        description: Время отправки сегмента
+        type: string
+      total_segments:
+        description: Общее количество сегментов в сообщении
+        type: integer
+      username:
+        description: Имя пользователя, отправившего сообщение
+        type: string
+    type: object
+host: 192.168.80.254:8081
+info:
+  contact: {}
+  description: API для транспортного уровня Марса, обрабатывающего сегменты сообщений
+    с Земли
+  title: Транспортный уровень Марса API
+  version: "1.0"
+paths:
+  /transfer:
+    post:
+      consumes:
+      - application/json
+      description: Принимает сегмент сообщения от канального уровня Земли, сохраняет
+        его и отправляет ACK
+      parameters:
+      - description: Сегмент сообщения
+        in: body
+        name: segment
+        required: true
+        schema:
+          $ref: '#/definitions/utils.Segment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Сегмент успешно получен
+        "400":
+          description: Некорректный запрос
+      summary: Получение сегмента сообщения
+      tags:
+      - segments
+swagger: "2.0"
